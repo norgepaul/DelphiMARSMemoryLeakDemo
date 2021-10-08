@@ -19,6 +19,12 @@ type
     de-allocated despite the calls to Free.
 
     This behaviour only occurs on Linux. Windows works as expected.
+
+    If the singleline parameter is set to true, the memory leak is
+    much smaller. The only difference is that with singleline, the characters
+    are added a single line rather than each character being on a new line.
+    The overall length of the texxt is the same however as new lines are included
+    in the length.
   *)
 
   [Path('test')]
@@ -31,7 +37,9 @@ type
 
     (* http://127.0.0.1:4000/rest/test/stringlist *)
     [GET, Path('/stringlist'), Produces(TMediaType.APPLICATION_JSON)]
-    function TestStringList: TJSONRawString;
+    function TestStringList(
+      [QueryParam('size')] const MaxSize: Integer;
+      [QueryParam('singleline')] const SingleLine: Boolean):TJSONRawString;
 
     (* http://127.0.0.1:4000/rest/test/stringlistobject *)
     [GET, Path('/stringlistobject'), Produces(TMediaType.APPLICATION_JSON)]
@@ -86,18 +94,29 @@ begin
   Result := '{}';
 end;
 
-function TMemLeakResource.TestStringList: TJSONRawString;
+function TMemLeakResource.TestStringList(
+  const MaxSize: Integer; const SingleLine: Boolean): TJSONRawString;
 var
   S: TStringList;
+  Size: Integer;
 begin
-  S := TMemLeakUtils.CreateStringList;
+  if MaxSize = 0 then
+  begin
+    Size := 1000000;
+  end
+  else
+  begin
+    Size := MaxSize;
+  end;
+
+  S := TMemLeakUtils.CreateStringList(Size, SingleLine);
   try
     sleep(2000);
+
+    Result := format('{"length": %d}', [Length(S.Text)]);
   finally
     S.Free; // <-- This doesn't free the memory allocated by TStringList
   end;
-
-  Result := '{}';
 end;
 
 function TMemLeakResource.TestStringListObject: TJSONRawString;
