@@ -25,9 +25,22 @@ type
   [Produces(TMediaType.APPLICATION_JSON)]
   TMemLeakResource = class
   public
+    (* --------------------------------------------- *)
+    (* Functions with memory leak                    *)
+    (* --------------------------------------------- *)
+
     (* http://127.0.0.1:4000/rest/test/stringlist *)
     [GET, Path('/stringlist'), Produces(TMediaType.APPLICATION_JSON)]
     function TestStringList: TJSONRawString;
+
+    (* http://127.0.0.1:4000/rest/test/stringlistobject *)
+    [GET, Path('/stringlistobject'), Produces(TMediaType.APPLICATION_JSON)]
+    function TestStringListObject: TJSONRawString;
+
+
+    (* --------------------------------------------- *)
+    (* Functions without memory leak                 *)
+    (* --------------------------------------------- *)
 
     (* http://127.0.0.1:4000/rest/test/getmem *)
     [GET, Path('/getmem'), Produces(TMediaType.APPLICATION_JSON)]
@@ -44,10 +57,6 @@ type
     (* http://127.0.0.1:4000/rest/test/object *)
     [GET, Path('/object'), Produces(TMediaType.APPLICATION_JSON)]
     function TestObject: TJSONRawString;
-
-    (* http://127.0.0.1:4000/rest/test/stringlist *)
-    [GET, Path('/stringlistobject'), Produces(TMediaType.APPLICATION_JSON)]
-    function TestStringListObject: TJSONRawString;
   end;
 
   TBigObj = class(TObject)

@@ -4,9 +4,6 @@ program MemLeakTest;
 
 {$R *.res}
 
-// Adds a fix for the Linux AnsiCompareText bug - it does not fix this issue.
-{$DEFINE MEM_LEAK_FIX}
-
 // The MARS_TEST is the only one which generates a meory leak and only on Linux.
 // See the comments in MemLeak.Server.Resource for more info.
 {$DEFINE MARS_TEST}
@@ -14,16 +11,15 @@ program MemLeakTest;
 {.$DEFINE THREAD_TEST}
 {.$DEFINE NO_THREAD_TEST}
 
+// Adds a fix for the Linux AnsiCompareText bug - it does not fix this issue.
+{.$DEFINE MEM_LEAK_FIX}
+
 uses
   System.Classes
   ,System.SysUtils
   ,System.Threading
   ,MemLeak.Utils in 'MemLeak.Utils.pas'
-{$IFDEF MEM_LEAK_FIX}
-{$IFDEF LINUX64}
-  ,System.Internal.ICU
-{$ENDIF}
-{$ENDIF}
+  ,MemLeak.Server.Resource in 'MemLeak.Server.Resource.pas'
 
 {$IFDEF HTTP_SERVER_TEST}
   ,IdHTTPServer
@@ -40,7 +36,12 @@ uses
   ,MARS.Core.MessageBodyWriter
   ,MARS.Core.MessageBodyWriters
   ,MARS.Data.MessageBodyWriters
-  ,MemLeak.Server.Resource in 'MemLeak.Server.Resource.pas'
+{$ENDIF}
+
+{$IFDEF MEM_LEAK_FIX}
+{$IFDEF LINUX64}
+  ,System.Internal.ICU
+{$ENDIF}
 {$ENDIF}
 ;
 
@@ -54,6 +55,7 @@ end;
 {$ENDIF}
 {$ENDIF}
 
+{$REGION 'Local test classes'}
 {$IFDEF HTTP_SERVER_TEST}
 type
   TLeakHTTPServer = class(TIdHTTPServer)
@@ -77,6 +79,7 @@ begin
   end;
 end;
 {$ENDIF}
+{$ENDREGION}
 
 begin
 {$IFDEF MEM_LEAK_FIX}
@@ -114,6 +117,7 @@ begin
   FMarsServer.Active := True;
 {$ENDIF}
 
+{$REGION 'Additional local tests - none have memory leak'}
 {$IFDEF HTTP_SERVER_TEST}
   var HTTPServer := TLeakHTTPServer.Create(nil);
   HTTPServer.DefaultPort := 4000;
@@ -167,6 +171,7 @@ begin
     sleep(2000);
   end;
 {$ENDIF}
+{$ENDREGION}
 
   Write('Press any key to quit');
   Readln;
