@@ -67,7 +67,7 @@ begin
   try
     sleep(2000);
   finally
-    S.Free;
+    S.Free; // <-- This doesn't free the memory allocated by TStringList
   end;
 
   Result := '{}';

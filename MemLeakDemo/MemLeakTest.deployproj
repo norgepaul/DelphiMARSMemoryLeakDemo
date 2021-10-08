@@ -17,7 +17,7 @@
         </DeployFile>
     </ItemGroup>
     <ItemGroup Condition="'$(Platform)'=='Linux64'">
-        <DeployFile Include="..\..\..\Bin\Debug\Linux64\MemLeakTest" Condition="'$(Config)'=='Debug'">
+        <DeployFile Include="..\Bin\Debug\Linux64\MemLeakTest" Condition="'$(Config)'=='Debug'">
             <RemoteDir>MemLeakTest\</RemoteDir>
             <RemoteName>MemLeakTest</RemoteName>
             <DeployClass>ProjectOutput</DeployClass>
