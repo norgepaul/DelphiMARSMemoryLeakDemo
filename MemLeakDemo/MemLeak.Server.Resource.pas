@@ -39,6 +39,23 @@ type
     (* http://127.0.0.1:4000/rest/test/string *)
     [GET, Path('/string'), Produces(TMediaType.APPLICATION_JSON)]
     function TestString: TJSONRawString;
+
+    (* http://127.0.0.1:4000/rest/test/object *)
+    [GET, Path('/object'), Produces(TMediaType.APPLICATION_JSON)]
+    function TestObject: TJSONRawString;
+
+    (* http://127.0.0.1:4000/rest/test/stringlist *)
+    [GET, Path('/stringlistobject'), Produces(TMediaType.APPLICATION_JSON)]
+    function TestStringListObject: TJSONRawString;
+  end;
+
+  TBigObj = class(TObject)
+    S: String;
+  end;
+
+  TStringListObj = class(TObject)
+  public
+    procedure Go;
   end;
 
 implementation
@@ -68,6 +85,20 @@ begin
     sleep(2000);
   finally
     S.Free; // <-- This doesn't free the memory allocated by TStringList
+  end;
+
+  Result := '{}';
+end;
+
+function TMemLeakResource.TestStringListObject: TJSONRawString;
+var
+  O: TStringListObj;
+begin
+  O := TStringListObj.Create;
+  try
+    O.Go;
+  finally
+    O.Free;
   end;
 
   Result := '{}';
@@ -107,6 +138,38 @@ begin
   Dispose(P);
 
   Result := '{}';
+end;
+
+function TMemLeakResource.TestObject: TJSONRawString;
+var
+  O: TBigObj;
+  i: Integer;
+begin
+  O := TBigObj.Create;
+  try
+    for i := 1 to Count do
+    begin
+      O.S := O.S + 'X';
+    end;
+
+    sleep(2000);
+  finally
+    O.Free;
+  end;
+end;
+
+{ TStringListObj }
+
+procedure TStringListObj.Go;
+var
+  S: TStringList;
+begin
+  S := TMemLeakUtils.CreateStringList;
+  //try
+    sleep(2000);
+  //finally
+    S.Free; // <-- This doesn't free the memory allocated by TStringList
+  //end;
 end;
 
 initialization
