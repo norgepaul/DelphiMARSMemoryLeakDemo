@@ -124,7 +124,7 @@
             <Form>$IFDEF MEM_LEAK_FIX</Form>
         </DCCReference>
         <DCCReference Include="MemLeak.Server.Resource.pas">
-            <Form>$IFDEF MEM_LEAK_FIX</Form>
+            <Form>$IFDEF MARS_TEST</Form>
         </DCCReference>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
