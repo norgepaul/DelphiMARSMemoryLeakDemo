@@ -14,8 +14,9 @@ uses
 
 type
   (*
-    The only request that generates a memory leak is /rest/test/stringlist.
-    It appears that the memory is never de-allocated despite the call to Free.
+    The only requests that generates a memory leak are /rest/test/stringlist and
+    /rest/test/stringlistobject. It appears that the memory is never
+    de-allocated despite the calls to Free.
 
     This behaviour only occurs on Linux. Windows works as expected.
   *)
@@ -165,11 +166,11 @@ var
   S: TStringList;
 begin
   S := TMemLeakUtils.CreateStringList;
-  //try
+  try
     sleep(2000);
-  //finally
+  finally
     S.Free; // <-- This doesn't free the memory allocated by TStringList
-  //end;
+  end;
 end;
 
 initialization
