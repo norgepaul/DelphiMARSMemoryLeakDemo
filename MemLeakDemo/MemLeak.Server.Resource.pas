@@ -152,7 +152,7 @@ begin
   end;
 
   // Removing this statement reduces the leak to approx 6MB
-  //Result := X;
+  Result := X;
 end;
 
 function TMemLeakResource.TestArray: TJSONRawString;
