@@ -14,17 +14,9 @@ uses
 
 type
   (*
-    The only requests that generates a memory leak are /rest/test/stringlist and
-    /rest/test/stringlistobject. It appears that the memory is never
-    de-allocated despite the calls to Free.
+    The leak behaviour only occurs on Linux. Windows works as expected.
 
-    This behaviour only occurs on Linux. Windows works as expected.
-
-    If the singleline parameter is set to true, the memory leak is
-    much smaller. The only difference is that with singleline, the characters
-    are added a single line rather than each character being on a new line.
-    The overall length of the texxt is the same however as new lines are included
-    in the length.
+    See comments below for issues with Delphi versions.
   *)
 
   [Path('test')]
@@ -32,7 +24,16 @@ type
   TMemLeakResource = class
   public
     (* --------------------------------------------- *)
-    (* Functions with memory leak                    *)
+    (* Functions with memory leak in Delphi 11.0.0   *)
+    (* --------------------------------------------- *)
+
+    (* http://127.0.0.1:4000/rest/test/string2 *)
+    [GET, Path('/string2'), Produces(TMediaType.APPLICATION_JSON)]
+    function TestString2: TJSONRawString;
+
+
+    (* --------------------------------------------- *)
+    (* Functions with memory leak in Delphi 10.4.3   *)
     (* --------------------------------------------- *)
 
     (* http://127.0.0.1:4000/rest/test/stringlist *)
@@ -131,6 +132,27 @@ begin
   end;
 
   Result := '{}';
+end;
+
+function TMemLeakResource.TestString2: TJSONRawString;
+var
+  i: Integer;
+  X: String;
+begin
+  // First pass only leaks approx 0.2MB
+  // Subsequent passes leak approx 12MB
+
+  Result := '{}';
+  X := '';
+
+  for i := 1 to 10000 do
+  begin
+    X := X + '{"id":15000,"topic":"snsr","payload":"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX","generated_at":"2021-10-12T10:05:23.663",' +
+              '"published_at":"2021-10-12T10:05:23.663","created_at":"2021-10-12T10:05:23.663","protocol_version":0,"direction":0}';
+  end;
+
+  // Removing this statement reduces the leak to approx 6MB
+  //Result := X;
 end;
 
 function TMemLeakResource.TestArray: TJSONRawString;
