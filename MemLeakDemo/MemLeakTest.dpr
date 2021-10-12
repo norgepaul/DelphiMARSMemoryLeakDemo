@@ -10,6 +10,7 @@ program MemLeakTest;
 {.$DEFINE HTTP_SERVER_TEST}
 {.$DEFINE THREAD_TEST}
 {.$DEFINE NO_THREAD_TEST}
+{.$DEFINE INDY_TEST}
 
 // Adds a fix for the Linux AnsiCompareText bug - it does not fix this issue.
 {.$DEFINE MEM_LEAK_FIX}
@@ -25,6 +26,11 @@ uses
   ,IdHTTPServer
   ,IdContext
   ,IdCustomHTTPServer
+{$ENDIF}
+
+{$IFDEF INDY_TEST}
+  ,IdTask
+  ,IdThread
 {$ENDIF}
 
 {$IFDEF MARS_TEST}
@@ -56,6 +62,31 @@ end;
 {$ENDIF}
 
 {$REGION 'Local test classes'}
+{$IFDEF INDY_TEST}
+type
+  TTestTask = class(TIdTask)
+  public
+    function Run: boolean; override;
+  end;
+
+  function TTestTask.Run: boolean;
+  var
+    LList: TStringList;
+  begin
+    // This will execute repeatedly until the task is terminated.
+    LList := TStringList.Create;
+    try
+      LList.Add('Foobar');
+      sleep(100);
+    finally
+      FreeAndNil(LList);
+    end;
+
+    Writeln('TestTask.Run done');
+    result := true;
+  end;
+{$ENDIF}
+
 {$IFDEF HTTP_SERVER_TEST}
 type
   TLeakHTTPServer = class(TIdHTTPServer)
@@ -151,7 +182,6 @@ begin
   end;
 {$ENDIF}
 
-
 {$IFDEF NO_THREAD_TEST}
   var i, n: Integer;
   var S: TStringList;
@@ -172,6 +202,25 @@ begin
   end;
 {$ENDIF}
 {$ENDREGION}
+
+{$IFDEF INDY_TEST}
+  ReportMemoryLeaksOnShutdown := true;
+
+  //while true do
+  begin
+    Writeln('Started thread');
+
+    var
+      LThread := TIdThreadWithTask.Create(TTestTask.Create(nil), 'TestTask');
+    try
+      LThread.Start;
+      sleep(1000);
+      LThread.TerminateAndWaitFor;
+    finally
+      FreeAndNil(LThread);
+    end;
+  end;
+{$ENDIF}
 
   Write('Press any key to quit');
   Readln;
