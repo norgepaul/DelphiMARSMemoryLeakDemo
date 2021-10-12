@@ -15,6 +15,9 @@ program MemLeakTest;
 // Adds a fix for the Linux AnsiCompareText bug - it does not fix this issue.
 {.$DEFINE MEM_LEAK_FIX}
 
+// When defined, MARS will use Delphi Cross Socket instead of Indy
+{.$DEFINE USE_MARS_DCS}
+
 uses
   System.Classes
   ,System.SysUtils
@@ -34,7 +37,11 @@ uses
 {$ENDIF}
 
 {$IFDEF MARS_TEST}
+{$IFDEF USE_MARS_DCS}
+  ,MARS.http.Server.DCS
+{$ELSE}
   ,MARS.http.Server.Indy
+{$ENDIF}
   ,MARS.Core.Engine
   ,MARS.Core.URL
   ,MARS.JOSEJWT.Token
@@ -120,12 +127,12 @@ begin
 {$ENDIF}
 
 {$IFDEF MARS_TEST}
-  var FMarsServer: TMARShttpServerIndy;
+  var FMarsServer: {$IFDEF USE_MARS_DCS}TMARShttpServerDCS{$ELSE}TMARShttpServerIndy{$ENDIF};
   var FMarsEngine: TMARSEngine;
 
   FMarsEngine := TMARSEngine.Create;
   FMarsEngine.BasePath := '';
-  FMarsServer := TMARShttpServerIndy.Create(FMarsEngine);
+  FMarsServer := {$IFDEF USE_MARS_DCS}TMARShttpServerDCS{$ELSE}TMARShttpServerIndy{$ENDIF}.Create(FMarsEngine);
   FMarsEngine.AddApplication('MemLeakTest', '/rest', ['MemLeak.Server.*'], '');
   FMarsEngine.Port := 4000;
   FMarsEngine.BeforeHandleRequest :=

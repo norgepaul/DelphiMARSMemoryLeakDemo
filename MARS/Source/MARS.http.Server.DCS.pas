@@ -129,7 +129,7 @@ constructor TMARShttpServerDCS.Create(AEngine: TMARSEngine);
 begin
   inherited Create;
   FEngine := AEngine;
-  FHttpServer := TCrossHttpServer.Create(0);
+  FHttpServer := TCrossHttpServer.Create(0, False);
 end;
 
 destructor TMARShttpServerDCS.Destroy;
@@ -185,7 +185,7 @@ begin
 //      AResponse.Send('Hello World');
 //    end)
   .All(FEngine.BasePath + '*',
-    procedure(ARequest: ICrossHttpRequest; AResponse: ICrossHttpResponse; var AHandled: Boolean)
+    procedure(const ARequest: ICrossHttpRequest; const AResponse: ICrossHttpResponse; var AHandled: Boolean)
     begin
       AHandled := FEngine.HandleRequest(TMARSDCSRequest.Create(ARequest), TMARSDCSResponse.Create(AResponse))
     end
